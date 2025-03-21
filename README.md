@@ -1,7 +1,7 @@
 # Laravel Grocery Store Pre-Order
 The Grocery Preorder is a Laravel Package for getting pre order in a grocery shop.
 
-It allows users to easily exchange and convert currencies in real-time. The application integrates with APIs to fetch up-to-date exchange rates and provides a user-friendly interface for performing currency conversions. It is designed to be scalable, secure, and easy to customize, making it suitable for personal or business use.
+The Laravel Grocery Store Pre-Order Package allows customers to place pre-orders for grocery items seamlessly. It provides an intuitive form with conditional fields, reCAPTCHA for security, and rate limiting to prevent spam. The package includes backend management features such as search, pagination, ordering, and soft deletes. It also supports email notifications for both customers and admins, leveraging Laravel’s event system. Built with PostgreSQL, it ensures robust data handling and smooth integration into any Laravel project.
 
 ### Usage or Installation 
 ```
