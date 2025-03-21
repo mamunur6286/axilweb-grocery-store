@@ -1,5 +1,5 @@
-# Laravel Currency Exchanger
-The Grocery Preorder is a Laravel Package for realtime currency exchange.
+# Laravel Grocery Store Pre-Order
+The Grocery Preorder is a Laravel Package for getting pre order in a grocery shop.
 
 It allows users to easily exchange and convert currencies in real-time. The application integrates with APIs to fetch up-to-date exchange rates and provides a user-friendly interface for performing currency conversions. It is designed to be scalable, secure, and easy to customize, making it suitable for personal or business use.
 
@@ -44,7 +44,7 @@ Next, we need to add our new Service Provider in our config/app.php inside of th
     Illuminate\Auth\AuthServiceProvider::class,
     //.. Other providers
     
-    Mamunur6286\Grocery Preorder\Providers\CurrenryServiceProvider::class,
+    Mamunur6286\GroceryStore\PreOrderManagement\PreOrderServiceProvider::class,
 
 ],
 ```
@@ -52,58 +52,92 @@ Next, we need to add our new Service Provider in our config/app.php inside of th
 Awesome! Our service provider is loaded and our package is ready to go! But we don't have any functionality yet... Let's tackle that by adding a Controller for our Project.
 
 #### 5. Basic Usease
-
-Let's start by creating a new `ConvertController` inside of our project Controllers directory, and add the following code:
+this package give you some route to use your frontend app the routes is 
+```
+api/v1/grocery-store/pre-orders
+api/v1/grocery-store/pre-orders/store
+api/v1/grocery-store/pre-orders/remove/{id}
 
 ```
-<?php
-use Mamunur6286\Grocery Preorder\Convert;
-
-class ConvertController
-{
-    private $convert;
-    // set convert instance in convert property
-    public function __construct(Convert $convert) {
-	$this->convert = $convert;
-    }
-}
+The basic methods how extends your  `store()` `index()` and flow bellow code:
 
 ```
-Then let's create an exchange method inside your controller `exchange()` and flow bellow code:
-
-```
-    public function exchange(Request $request) {
+    public function index(Request $request)
+    {
         try {
-            $validator = Validator::make($request->all(), [
-                'currency' => 'required',
-                'amount' => 'required',
-            ]);
-        
-            if ($validator->fails()) {
-                return ([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ]);
-            }
 
-            return  $this->convert->exchangeTo($request);
+            $phone = $request->get('phone');
+            $email = $request->get('email');
+            $name = $request->get('name');
+            $productId = $request->get('preduct_id');
+            
+            $preOrders = PreOrder::query()
+                ->when($name, function (Builder $query) use ($name) {
+                    return $query->where('name', 'LIKE', '%'.$name.'%');
+                })
+                ->when($productId, function (Builder $query) use ($productId) {
+                    return $query->where('product_id', $productId);
+                })
+                ->when($email, function (Builder $query) use ($email) {
+                    return $query->where('email', 'LIKE', '%'.$email.'%');
+                })
+                ->when($phone, function (Builder $query) use ($phone) {
+                    return $query->where('phone', 'LIKE', '%'.$phone.'%');
+                })
+                ->latest()
+                ->paginate(config('app.per_page'));
 
-        } catch (\Exception $e) {
-            return response([
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pre Order created successfully.',
+                'data' => $preOrders
+            ], Response::HTTP_OK);
+
+        } catch (Exception $e) {
+            return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
-            ]);
+                'message' => app()->isProduction() ? 'Internal Server Error' : $e->getMessage(),
+                'data' => []
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    public function store(PreOrderRequest $request, )
+    {
+        try {
+
+            $preOrder = PreOrder::create($request->all());
+
+            event(new PreOrderEmailEvent($preOrder));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pre Order created successfully.',
+                'data' => []
+            ], Response::HTTP_OK);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => app()->isProduction() ? 'Internal Server Error' : $e->getMessage(),
+                'data' => []
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
 ```
 
-#### 7. Use Api endpoint. 
-Let's see how to work this package in the api endpoint. After run your project your can check your package validity by api endpoint with params like :
+#### 7. Here we use event litener to send email with queue 
+Let's see how to work this package in event litener and laravle queue :
 
 ```
-http://localhost:8000/exchange?currency=USD&amount=100
+Bus::chain([
+    new SendAdminEmailNotificationJob($preOrder), 
+    new SendUserEmailNotificationJob($preOrder)
+])->dispatch();
 ```
 
 
 #### Conclusion. 
-That's how to use the Laravel Currency Exchanger package. Thank you for using Grocery Preorder. 
+That's how to use the Laravel gorcerypreorder package. Thank you for using Grocery Preorder. 
