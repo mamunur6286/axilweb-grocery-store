@@ -1,5 +1,5 @@
 import axios from 'axios'
-export const baseUrl = 'http://127.0.0.1:8000/api/v1/grocery-store/'
+export const baseUrl = 'https://booking.csecareer.com/public/api/v1/grocery-store/'
 
 export default {
     execute(baseUrl, method, uri, data, params = {}) {

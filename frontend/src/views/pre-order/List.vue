@@ -39,6 +39,9 @@
                         <template v-slot:cell(index)="data">
                             {{ data.index + pagination.slOffset }}
                         </template>
+                        <template v-slot:cell(product_id)="data">
+                            {{ productList.find(item => item.value == data.item.product_id).text }}
+                        </template>
                         <template v-slot:cell(status)>
                             <span class="badge badge-success">Active</span>
                         </template>
@@ -65,6 +68,7 @@
 <script>
 import RestApi, { baseUrl } from '../../config/api_config'
 import iziToast from 'izitoast';
+import { productList } from '../../Utils/constants';
 
 export default {
     components: {
@@ -74,6 +78,7 @@ export default {
     },
     data() {
       return {
+        productList: [...productList],
         search: {
             name: ''
         },
